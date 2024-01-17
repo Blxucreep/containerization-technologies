@@ -1,0 +1,11 @@
+# use the nginx image
+FROM nginx:latest
+
+# copy the HTML file created before to the nginx default HTML directory
+COPY index.html /usr/share/nginx/html
+
+# expose port 80
+EXPOSE 80
+
+# start nginx server
+CMD ["nginx", "-g", "daemon off;"]

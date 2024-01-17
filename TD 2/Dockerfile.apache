@@ -1,0 +1,11 @@
+# use the apache image
+FROM httpd:latest
+
+# copy the HTML file created before to the apache default HTML directory
+COPY index.html /usr/local/apache2/htdocs/
+
+# expose port 80
+EXPOSE 80
+
+# start apache server
+CMD ["httpd", "-D", "FOREGROUND"]
