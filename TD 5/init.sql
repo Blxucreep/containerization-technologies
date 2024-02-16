@@ -1,10 +1,4 @@
 -- init.sql
--- create the database
-CREATE DATABASE db;
-
--- move to the database
-\l db;
-
 -- create the table
 CREATE TABLE courses (course_id serial primary key, title varchar(100), description varchar(200), teacher varchar(100));
 CREATE TABLE students (student_id serial primary key, fullname varchar(100), age int);

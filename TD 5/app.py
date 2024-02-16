@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 # database connection configuration
 db_config = {
-    'host': '127.0.0.1', # host name
+    'host': 'db', # db container name
     'database': 'db', # database name
     'user': 'postgres', # default postgres user
     'password': 'root', # password
@@ -17,21 +17,24 @@ db_config = {
 def get_students():
     try:
         connection = psycopg2.connect(**db_config)
-        print('Connection:', connection)
         cursor = connection.cursor()
 
         # query
         cursor.execute("SELECT * FROM students;")
         data = cursor.fetchall()
-        print(data)
 
         cursor.close()
         connection.close()
 
         return data
-    except Exception as e:
-        print(f"Error executing SQL query: {e}")
+    except:
         return []
+
+# route to display the data
+@app.get('/api/get')
+def students():
+    data = get_students()
+    return jsonify(data)
 
 # insert the data into the database
 def insert_student():
@@ -40,25 +43,21 @@ def insert_student():
         cursor = connection.cursor()
 
         # query
-        cursor.execute("INSERT INTO students (name, age) VALUES ('William', 21);")
+        cursor.execute("INSERT INTO students (fullname, age) VALUES ('William', 21);")
         connection.commit()
 
         cursor.close()
         connection.close()
-    except Exception as e:
-        print(f"Error executing SQL query: {e}")
 
-# route to display the data
-@app.route('/api/get')
-def students():
-    data = get_students()
-    return jsonify(data)
+        return 'Data inserted'
+    except:
+        return 'Error inserting data'
 
 # route to insert the data
-@app.route('/api/insert')
+@app.post('/api/insert')
 def insert():
-    insert_student()
-    return 'DATA INSERTED'
+    data = insert_student()
+    return jsonify(data)
 
 @app.route('/health')
 def health():
