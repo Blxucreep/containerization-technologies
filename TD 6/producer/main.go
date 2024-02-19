@@ -137,6 +137,10 @@ func (p *producer) handleHealthcheck(w http.ResponseWriter, r *http.Request) {
 // =============================================================================
 
 func (p *producer) publish(ctx context.Context) error {
+	if err := p.client.Ping(ctx); err != nil {
+		log.Printf("Unable to connect to redis instance: %s...", err)
+
+	}
 	if err := p.client.RPush(ctx, p.queue, "Hello :) ! 👋").Err(); err != nil {
 		p.healthy = false
 		return fmt.Errorf("failed to publish: %w", err)
