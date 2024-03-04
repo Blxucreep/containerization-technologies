@@ -23,7 +23,7 @@ import (
 
 var (
 	httpAddr   = flag.String("http", ":8080", "Address to listen for requests on")
-	redisAddr  = flag.String("redis-server", "redis-master:6379", "Redis server to publish messages to")
+	redisAddr  = flag.String("redis-server", "redis:6379", "Redis server to publish messages to")
 	redisQueue = flag.String("redis-queue", "esilv", "Redis queue to publish messages to")
 )
 
