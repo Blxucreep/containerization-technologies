@@ -1,0 +1,30 @@
+version: '3' # specify docker-compose version
+
+services:
+  nginx:
+    container_name: nginx
+    build:
+      context: ./nginxv # specify the directory of the Dockerfile
+    ports:
+      - "8080:80"
+    depends_on: # depends on other services
+      - consumer 
+      - producer
+
+  redis:
+    container_name: redis
+    image: "redis:alpine" # specify image to use
+
+  consumer:
+    container_name: consumer
+    build:
+      context: ./consumer # specify the directory of the Dockerfile
+    depends_on:
+      - redis # depends on redis
+
+  producer:
+    container_name: producer
+    build:
+      context: ./producer # specify the directory of the Dockerfile
+    depends_on:
+      - redis # depends on redis

@@ -1,5 +1,5 @@
 # use the nginx image
-FROM nginx:1.24
+FROM nginx:1.24-alpine
 
 # copy the nginx configuration file
 COPY nginx.conf /etc/nginx/nginx.conf
