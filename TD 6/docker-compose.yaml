@@ -31,9 +31,5 @@ services:
     depends_on:
       - redis # depends on redis
 
-networks:
-  mynetwork:
-    name: my-network # specify the network to use
-
 volumes:
   redisdata: {} # specify the volume to use
