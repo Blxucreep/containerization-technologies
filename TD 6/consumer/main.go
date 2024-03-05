@@ -27,7 +27,7 @@ var (
 	cpuBurn    = flag.Bool("cpu-burn", false, "Whether to use CPU while processing messages")
 	httpAddr   = flag.String("http", ":8080", "Address to listen for requests on")
 	redisAddr  = flag.String("redis-server", "redis:6379", "Redis server to consume messages from")
-	redisQueue = flag.String("redis-queue", "beluga", "Redis queue to consume messages from")
+	redisQueue = flag.String("redis-queue", "esilv", "Redis queue to consume messages from")
 	logToFile  = flag.Bool("log-to-file", false, "Whether to log everything in file instead of stdout")
 	timePerMsg = flag.Duration("per-msg", time.Second, "The amount of time the consumer spends on each message")
 )
@@ -184,12 +184,6 @@ func (c *consumer) consumeMessages(ctx context.Context) {
 	for msg := range messages {
 		log.Printf("Received a message: %q.", msg)
 		log.Println("Processing message...")
-
-		// Let's play some russian roulette!
-		if rand.Intn(19) == 0 {
-			log.Println("💥")
-			os.Exit(1)
-		}
 
 		if c.cpuBurn {
 			done := time.After(c.perMsg)

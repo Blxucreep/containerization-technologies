@@ -14,8 +14,6 @@ services:
   redis:
     container_name: redis
     image: redis:alpine # specify image to use
-    volumes:
-      - redisdata:/data # specify the volume to use
 
   consumer:
     container_name: consumer
@@ -30,6 +28,3 @@ services:
       context: ./producer # specify the directory of the Dockerfile
     depends_on:
       - redis # depends on redis
-
-volumes:
-  redisdata: {} # specify the volume to use
