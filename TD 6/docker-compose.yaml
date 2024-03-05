@@ -1,4 +1,4 @@
-version: 1.28.2 # specify docker-compose version
+version: 1.28.2 # specify docker-compose version as asked
 
 services:
   nginx:
