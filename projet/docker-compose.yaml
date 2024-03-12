@@ -8,7 +8,9 @@ services:
       - 5000:5000
     volumes:
       - ./frontend:/app
-  
+    networks:
+      - default
+
   chat-service:
     container_name: chat-service
     build: 
@@ -16,6 +18,9 @@ services:
       dockerfile: Dockerfile.app
     ports:
       - 5001:5001
+    networks:
+      - chat-service-network
+      - default
 
   chat-service-db:
     container_name: chat-service-db
@@ -25,7 +30,9 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./backend/chat-service:/app
+      - chat-service-db-data:/var/lib/postgresql/data
+    networks:
+      - chat-service-network
 
   user-service:
     container_name: user-service
@@ -34,6 +41,9 @@ services:
       dockerfile: Dockerfile.app
     ports:
       - 5002:5002
+    networks:
+      - user-service-network
+      - default
 
   user-service-db:
     container_name: user-service-db
@@ -43,4 +53,18 @@ services:
     ports:
       - 3001:3001
     volumes:
-      - ./backend/user-service:/app
+      - user-service-db-data:/var/lib/postgresql/data
+    networks:
+      - user-service-network
+
+volumes:
+  user-service-db-data:
+  chat-service-db-data:
+
+networks:
+  chat-service-network:
+    driver: bridge
+  user-service-network:
+    driver: bridge
+  default:
+    driver: bridge

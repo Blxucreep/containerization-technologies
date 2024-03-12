@@ -1,17 +1,15 @@
-# use an official python runtime
 FROM python:3.8-slim
 
-# set the working directory in the container
 WORKDIR /app
 
-# copy the app.py file into the container at /app
 COPY app.py /app
 
-# install dependencies (here, it should install flask)
-RUN pip install flask psycopg2-binary
+RUN pip install flask psycopg2-binary Flask-SQLAlchemy Flask-Migrate Flask-JWT-Extended
 
-# expose port 8080
-EXPOSE 8080
+EXPOSE 5001
 
-# run app.py when the container launches
-CMD ["python", "app.py"]
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
+ENV FLASK_RUN_PORT=5001
+
+CMD ["flask", "run"]
