@@ -1,0 +1,10 @@
+# use an official postgres runtime
+FROM postgres:14-alpine
+
+# copy the init.sql file to the docker-entrypoint-initdb.d directory
+COPY init.sql /docker-entrypoint-initdb.d/
+
+# define the environment variables
+ENV POSTGRES_DB=db
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=root

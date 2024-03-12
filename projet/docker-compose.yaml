@@ -1,0 +1,46 @@
+version: 3
+
+services:
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    ports:
+      - 5000:5000
+    volumes:
+      - ./frontend:/app
+  
+  chat-service:
+    container_name: chat-service
+    build: 
+      context: ./backend/chat-service
+      dockerfile: Dockerfile.app
+    ports:
+      - 5001:5001
+
+  chat-service-db:
+    container_name: chat-service-db
+    build: 
+      context: ./backend/chat-service-db
+      dockerfile: Dockerfile.db
+    ports:
+      - 3000:3000
+    volumes:
+      - ./backend/chat-service:/app
+
+  user-service:
+    container_name: user-service
+    build:
+      context: ./backend/user-service
+      dockerfile: Dockerfile.app
+    ports:
+      - 5002:5002
+
+  user-service-db:
+    container_name: user-service-db
+    build:
+      context: ./backend/user-service-db
+      dockerfile: Dockerfile.db
+    ports:
+      - 3001:3001
+    volumes:
+      - ./backend/user-service:/app
