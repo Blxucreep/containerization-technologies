@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - My Chat App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hub.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <nav>
+        <a href="/profile">Profile</a> | 
+        <a href="/logout">Logout</a>
+    </nav>
+    <div class="container">
+        <aside>
+            <div class="search-container">
+                <input type="text" placeholder="Search users...">
+                <button type="button" onclick="searchUsers()">Search</button>
+            </div>
+            <ul id="userList">
+                <!-- Les résultats de recherche d'utilisateurs s'afficheront ici -->
+            </ul>
+            <button class="create-room-btn">Create Room</button>
+            <h2>Chat Rooms</h2>
+            <ul id="roomList">
+                <li><a href="/room/general">General</a></li>
+                <li><a href="/room/tech">Tech</a></li>
+                <!-- Dynamically add more rooms here -->
+            </ul>
+        </aside>
+        <main>
+            <h1>Welcome to My Chat App!</h1>
+            <div class="active-chat">
+                <h2>General Room</h2> <!-- Dynamically update based on selected room -->
+                <div id="messages">
+                    <!-- Messages for the current chat room -->
+                </div>
+                <form id="messageInputForm">
+                    <input type="text" id="messageInput" placeholder="Type a message...">
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='js/hub.js') }}"></script>
+</body>
+</html>

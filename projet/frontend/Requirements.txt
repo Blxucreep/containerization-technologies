@@ -1,0 +1,7 @@
+Flask
+Flask-SocketIO
+eventlet  # ou remplacer par gevent si vous préférez
+Flask-Login
+Flask-WTF
+python-dotenv
+Flask-SQLAlchemy
