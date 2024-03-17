@@ -33,17 +33,17 @@ def signup():
     password = data.get('password')
 
     if not username or not password:
-        return jsonify({"msg": "Username and password are required"}), 400
+        return jsonify({"warning": "username and password are required"}), 400
 
     if User.query.filter_by(username=username).first():
-        return jsonify({"msg": "Username already exists"}), 409
+        return jsonify({"warning": "username already exists"}), 409
 
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     new_user = User(username=username, password=hashed_password.decode('utf-8'))
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({"msg": "User created successfully"}), 201
+    return jsonify({"msg": "user created successfully"}), 201
 
 # create the route /login
 @app.route('/login', methods=['POST'])
@@ -57,12 +57,17 @@ def login():
         access_token = create_access_token(identity=username)
         return jsonify(access_token=access_token), 200
 
-    return jsonify({"msg": "Bad username or password"}), 401
+    return jsonify({"warning": "bad username or password"}), 401
+
+# live route
+@app.route('/live', methods=['GET'])
+def live():
+    return jsonify({"status": "live"}), 200
 
 # run the application
 if __name__ == '__main__':
     with app.app_context():
-        print("Creating database tables...")
+        print("creating database tables...")
         db.create_all()
-        print("Database tables created.")
+        print("database tables created.")
     app.run(debug=True)

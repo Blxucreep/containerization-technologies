@@ -4,7 +4,7 @@ import os
 
 # create the Flask app
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('MESSAGE_DATABASE_URL', 'postgresql://messageuser:message@message-service-db:5432/messages-db') # PostgreSQL database
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('MESSAGE_DATABASE_URL', 'postgresql://normaluser:user@chat-service-db:5432/postgres-db') # PostgreSQL database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # silence the deprecation warning
 
 # initialize SQLAlchemy
@@ -14,8 +14,8 @@ db = SQLAlchemy(app)
 class Message(db.Model):
     __tablename__ = 'messages'
     id = db.Column(db.Integer, primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    sender_id = db.Column(db.Integer, nullable=False)
+    receiver_id = db.Column(db.Integer, nullable=False)
     content = db.Column(db.Text, nullable=False)
 
 # create the route /send_message
@@ -45,6 +45,11 @@ def get_messages(user_id):
     received_messages = [{'id': message.id, 'sender_id': message.sender_id, 'receiver_id': message.receiver_id, 'content': message.content} for message in received_messages]
 
     return jsonify({"sent_messages": sent_messages, "received_messages": received_messages}), 200
+
+# live route
+@app.route('/live', methods=['GET'])
+def live():
+    return jsonify({"status": "live"}), 200
 
 # run the application
 if __name__ == '__main__':

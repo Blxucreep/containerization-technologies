@@ -1,4 +1,4 @@
-version: 3
+version: '3'
 
 services:
   frontend:
@@ -25,10 +25,8 @@ services:
   chat-service-db:
     container_name: chat-service-db
     build: 
-      context: ./backend/chat-service-db
+      context: ./backend/chat-service
       dockerfile: Dockerfile.db
-    ports:
-      - 3000:3000
     volumes:
       - chat-service-db-data:/var/lib/postgresql/data
     networks:
@@ -48,10 +46,8 @@ services:
   user-service-db:
     container_name: user-service-db
     build:
-      context: ./backend/user-service-db
+      context: ./backend/user-service
       dockerfile: Dockerfile.db
-    ports:
-      - 3001:3001
     volumes:
       - user-service-db-data:/var/lib/postgresql/data
     networks:
