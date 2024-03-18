@@ -1,0 +1,67 @@
+stages:
+  - kics_scan
+  - show_results
+  - build
+
+run_kics_scan:
+  stage: kics_scan
+  image: 
+    name: checkmarx/kics:v1.7.13
+    entrypoint: [""]
+  script:
+    - mkdir -p output 
+    - apk add --no-cache jq || true
+    - kics scan -p . -o output --ci
+  artifacts:
+    paths:
+      - output/
+    expire_in: 1 week
+
+show_kics_results:
+  stage: show_results
+  image: alpine:latest
+  script:
+    - apk add --no-cache jq
+    - jq '.severity_counters.HIGH' output/results.json
+    - if [ $(jq '.severity_counters.HIGH' output/results.json) -gt 0 ]; then echo "High severity issues found"; exit 1; fi
+  dependencies:
+    - run_kics_scan
+  artifacts:
+    paths:
+      - output/
+    expire_in: 1 week
+build-frontend:
+  stage: build
+  image: 
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR/frontend --dockerfile $CI_PROJECT_DIR/frontend/Dockerfile --destination $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
+  only:
+    - branches
+
+build-chat-service:
+  stage: build
+  image: 
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR/backend/chat-service --dockerfile $CI_PROJECT_DIR/backend/chat-service/Dockerfile.app --destination $CI_REGISTRY_IMAGE/chat-service:$CI_COMMIT_SHORT_SHA
+  only:
+    - branches
+
+build-user-service:
+  stage: build
+  image: 
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR/backend/user-service --dockerfile $CI_PROJECT_DIR/backend/user-service/Dockerfile.app --destination $CI_REGISTRY_IMAGE/user-service:$CI_COMMIT_SHORT_SHA
+  only:
+    - branches
