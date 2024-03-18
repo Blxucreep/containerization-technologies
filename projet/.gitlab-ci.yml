@@ -35,10 +35,11 @@ scan_dockerfiles:
     entrypoint: [""]
   script:
     - mkdir -p /kaniko/.docker
-    - |
-      echo '{"auths":{"https://index.docker.io/v1/":{"username":"'"$DOCKER_USERNAME"'","password":"'"$DOCKER_PASSWORD"'"}}}' > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR/$CONTEXT --dockerfile $CI_PROJECT_DIR/$DOCKERFILE --destination docker.io/ahmedmaaloul/project-ct/$SERVICE:$CI_COMMIT_SHORT_SHA
-# Define build jobs for each service
+    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}" > /kaniko/.docker/config.json
+    - cat /kaniko/.docker/config.json | sed 's/"password":"[^"]*"/"password":"REDACTED"/'
+    - /kaniko/executor --context $CI_PROJECT_DIR/$CONTEXT --dockerfile $CI_PROJECT_DIR/$DOCKERFILE --destination ahmedmaaloul/$SERVICE:$CI_COMMIT_SHORT_SHA
+
+# Define build jobs for each service with its own repository
 build_frontend:
   <<: *build_template
   variables:
