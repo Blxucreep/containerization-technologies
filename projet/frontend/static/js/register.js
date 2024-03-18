@@ -1,4 +1,12 @@
 document.addEventListener("DOMContentLoaded", function() {
+    // check if the user is already logged in
+    const accessToken = sessionStorage.getItem('accessToken');
+
+    if (accessToken) {
+        // redirect to the main page if the user is already logged in
+        window.location.href = '/main';
+    }
+    
     document.getElementById("registrationForm").addEventListener("submit", function(event) {
         event.preventDefault();
         let username = document.getElementById("username").value;

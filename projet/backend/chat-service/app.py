@@ -62,5 +62,5 @@ if __name__ == '__main__':
     with app.app_context():
         print("creating message database tables...")
         db.create_all()
-        print("message database tables created.")
+        print("message database tables created")
     app.run(debug=True)

@@ -1,6 +1,16 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // retrieve the username from the session storage
-    const storedUsername = sessionStorage.getItem('username');
+    // retrieve the access token from the session storage
+    const accessToken = sessionStorage.getItem('accessToken');
+    let storedUsername = null;
+
+    // check if the user is logged in by decoding the access token
+    if (accessToken) {
+        const parts = accessToken.split('.');
+        const encodedPayload = parts[1];
+        const decodedPayload = atob(encodedPayload);
+        const payload = JSON.parse(decodedPayload);
+        storedUsername = payload.sub;
+    }
 
     if (!storedUsername) {
         // display a warning message and redirect to the login page
@@ -50,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function() {
             userList.innerHTML = "";
             data.users.forEach(user => {
                 // don't show the current user in the list
-                if (user.username !== sessionStorage.getItem('username')) {
+                if (user.username !== storedUsername) {
                     const listItem = document.createElement("li");
                     listItem.textContent = user.username;
                     listItem.addEventListener("click", function() {
@@ -76,8 +86,6 @@ document.addEventListener("DOMContentLoaded", function() {
             const toWhoIAmTalking = document.getElementById("your-messages");
             toWhoIAmTalking.textContent = `Your messages with ${username}`;
             toWhoIAmTalking.name = username;
-            console.log("username:", username);
-            console.log("data:", data);
 
             // display the messages
             const messagesDiv = document.getElementById("messages");
@@ -107,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
         const data = {
-            sender: sessionStorage.getItem('username'),
+            sender: storedUsername,
             receiver: selectedUser,
             content: messageInput
         };

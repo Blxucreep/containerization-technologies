@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, session
+from flask import Flask, render_template, redirect, url_for
 
 # create the Flask app
 app = Flask(__name__, template_folder='templates', static_folder='static')

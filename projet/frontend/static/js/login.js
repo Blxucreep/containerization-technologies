@@ -1,4 +1,12 @@
 document.addEventListener("DOMContentLoaded", function() {
+    // check if the user is already logged in
+    const accessToken = sessionStorage.getItem('accessToken');
+
+    if (accessToken) {
+        // redirect to the main page if the user is already logged in
+        window.location.href = '/main';
+    }
+    
     document.getElementById("loginForm").addEventListener("submit", function(event) {
         event.preventDefault();
         let username = document.getElementById("username").value;
@@ -17,10 +25,13 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => {
             if (response.ok) {
-                // store the username in the session storage
-                sessionStorage.setItem('username', username);
-                // redirect to the main page if the login is successful
-                window.location.href = '/main';
+                // store the access token in the session storage
+                response.json().then(data => {
+                    console.log("data:", data);
+                    sessionStorage.setItem('accessToken', data.access_token);
+                    // redirect to the main page if the login is successful
+                    window.location.href = '/main';
+                });
             } else {
                 // show an alert if the login failed
                 alert('Username or password incorrect, please try again.');
