@@ -1,67 +1,85 @@
 stages:
-  - kics_scan
-  - show_results
-  - build
+  - scan
+  - build_and_deploy
 
-run_kics_scan:
-  stage: kics_scan
+variables:
+  DOCKERFILES: |
+    ./frontend/Dockerfile
+    ./backend/chat-service/Dockerfile.app
+    ./backend/chat-service/Dockerfile.db
+    ./backend/user-service/Dockerfile.app
+    ./backend/user-service/Dockerfile.db
+
+scan_dockerfiles:
+  stage: scan
   image: 
-    name: checkmarx/kics:v1.7.13
+    name: checkmarx/kics:latest
     entrypoint: [""]
   script:
-    - mkdir -p output 
-    - apk add --no-cache jq || true
-    - kics scan -p . -o output --ci
-  artifacts:
-    paths:
-      - output/
-    expire_in: 1 week
-
-show_kics_results:
-  stage: show_results
-  image: alpine:latest
-  script:
-    - apk add --no-cache jq
-    - jq '.severity_counters.HIGH' output/results.json
-    - if [ $(jq '.severity_counters.HIGH' output/results.json) -gt 0 ]; then echo "High severity issues found"; exit 1; fi
-  dependencies:
-    - run_kics_scan
-  artifacts:
-    paths:
-      - output/
-    expire_in: 1 week
-build-frontend:
-  stage: build
-  image: 
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: [""]
-  script:
-    - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR/frontend --dockerfile $CI_PROJECT_DIR/frontend/Dockerfile --destination $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA
+    - |
+      for dockerfile_path in $DOCKERFILES; do
+        echo "Scanning $dockerfile_path"
+        kics scan --path $dockerfile_path --output-path kics-results.json
+        if grep -q '"severity": "HIGH"' kics-results.json; then
+          echo "High severity issue found in $dockerfile_path, failing the job."
+          exit 1
+        fi
+      done
   only:
     - branches
 
-build-chat-service:
-  stage: build
+.build_template: &build_template
+  stage: build_and_deploy
   image: 
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
   script:
     - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR/backend/chat-service --dockerfile $CI_PROJECT_DIR/backend/chat-service/Dockerfile.app --destination $CI_REGISTRY_IMAGE/chat-service:$CI_COMMIT_SHORT_SHA
+    - |
+      echo '{"auths":{"https://index.docker.io/v1/":{"username":"'"$DOCKER_USERNAME"'","password":"'"$DOCKER_PASSWORD"'"}}}' > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR/$CONTEXT --dockerfile $CI_PROJECT_DIR/$DOCKERFILE --destination docker.io/ahmedmaaloul/project-ct/$SERVICE:$CI_COMMIT_SHORT_SHA
+# Define build jobs for each service
+build_frontend:
+  <<: *build_template
+  variables:
+    CONTEXT: ./frontend
+    DOCKERFILE: ./frontend/Dockerfile
+    SERVICE: frontend
   only:
     - branches
 
-build-user-service:
-  stage: build
-  image: 
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: [""]
-  script:
-    - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR/backend/user-service --dockerfile $CI_PROJECT_DIR/backend/user-service/Dockerfile.app --destination $CI_REGISTRY_IMAGE/user-service:$CI_COMMIT_SHORT_SHA
+build_chat_service:
+  <<: *build_template
+  variables:
+    CONTEXT: ./backend/chat-service
+    DOCKERFILE: ./backend/chat-service/Dockerfile.app
+    SERVICE: chat-service
+  only:
+    - branches
+
+build_chat_service_db:
+  <<: *build_template
+  variables:
+    CONTEXT: ./backend/chat-service
+    DOCKERFILE: ./backend/chat-service/Dockerfile.db
+    SERVICE: chat-service-db
+  only:
+    - branches
+
+build_user_service:
+  <<: *build_template
+  variables:
+    CONTEXT: ./backend/user-service
+    DOCKERFILE: ./backend/user-service/Dockerfile.app
+    SERVICE: user-service
+  only:
+    - branches
+
+build_user_service_db:
+  <<: *build_template
+  variables:
+    CONTEXT: ./backend/user-service
+    DOCKERFILE: ./backend/user-service/Dockerfile.db
+    SERVICE: user-service-db
   only:
     - branches

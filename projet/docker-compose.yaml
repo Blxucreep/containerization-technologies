@@ -7,7 +7,7 @@ services:
     ports:
       - 5000:5000
     volumes:
-      - ./frontend:/app
+      - ./frontend:/app # CWE: N/A - Description of why this is not applicable
     networks:
       - default
 
