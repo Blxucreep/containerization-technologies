@@ -17,6 +17,8 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => {
             if (response.ok) {
+                // store the username in the session storage
+                sessionStorage.setItem('username', username);
                 // redirect to the main page if the login is successful
                 window.location.href = '/main';
             } else {

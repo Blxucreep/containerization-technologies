@@ -8,13 +8,10 @@
 </head>
 <body>
     <nav>
-        {% if username %}
-            <a href="/logout">Logout</a>
-        {% endif %}
-        {% if not username %}
-            <a href="/login">Login</a>
-            <a href="/register">Register</a>
-        {% endif %}
+        <a></a>
+        <a id="logout" href="/logout">Logout</a>
+        <a id="login" href="/login">Login</a>
+        <a id="register" href="/register">Register</a>
     </nav>
 
     <div class="container">
@@ -28,9 +25,9 @@
         <main>
             <h1>Welcome to my chat app!</h1>
             <div class="active-chat">
-                <h2>Your messages</h2>
+                <h2 id="your-messages"></h2>
                 <div id="messages">
-                    <!-- Messages for the current chat room -->
+                    <!-- messages for the current chat -->
                 </div>
                 <form id="messageInputForm">
                     <input type="text" id="messageInput" placeholder="Type a message...">

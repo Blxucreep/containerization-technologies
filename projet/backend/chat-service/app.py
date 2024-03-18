@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
 from flask_cors import CORS
 import os
+from datetime import datetime
 
 # create the Flask app
 app = Flask(__name__)
@@ -20,6 +22,7 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender = db.Column(db.Text, nullable=False)
     receiver = db.Column(db.Text, nullable=False)
+    time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     content = db.Column(db.Text, nullable=False)
 
 # create the route /send_message
@@ -28,12 +31,13 @@ def send_message():
     data = request.get_json()
     sender = data.get('sender')
     receiver = data.get('receiver')
+    time = data.get('time')
     content = data.get('content')
 
     if not all([sender, receiver, content]):
         return jsonify({"warning": "sender, receiver, and message content are required"}), 400
 
-    message = Message(sender=sender, receiver=receiver, content=content)
+    message = Message(sender=sender, receiver=receiver, time=time, content=content)
     db.session.add(message)
     db.session.commit()
 
@@ -42,13 +46,11 @@ def send_message():
 # create the route /get_messages/<username>
 @app.route('/get_messages/<username>', methods=['GET'])
 def get_messages(username):
-    sent_messages = Message.query.filter_by(sender=username).all()
-    received_messages = Message.query.filter_by(receiver=username).all()
+    messages = Message.query.filter(or_(Message.sender == username, Message.receiver == username)).all()
 
-    sent_messages = [{'id': message.id, 'sender': message.sender, 'receiver': message.receiver, 'content': message.content} for message in sent_messages]
-    received_messages = [{'id': message.id, 'sender': message.sender, 'receiver': message.receiver, 'content': message.content} for message in received_messages]
+    messages = [{'id': message.id, 'sender': message.sender, 'receiver': message.receiver, 'time': message.time, 'content': message.content} for message in messages]
 
-    return jsonify({"sent_messages": sent_messages, "received_messages": received_messages}), 200
+    return jsonify({"messages": messages}), 200
 
 # live route
 @app.route('/live', methods=['GET'])

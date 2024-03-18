@@ -22,7 +22,6 @@ def register():
 # create the route /logout
 @app.route('/logout', methods=['GET'])
 def logout():
-    session.clear()
     return redirect(url_for('login'))
 
 # create the route /live
