@@ -8,7 +8,7 @@ WORKDIR /app
 COPY app.py /app
 
 # run the command to install the dependencies
-RUN pip install flask psycopg2-binary Flask-SQLAlchemy Flask-Migrate Flask-JWT-Extended
+RUN pip install flask psycopg2-binary Flask-SQLAlchemy Flask-Cors
 
 # expose the port 5001
 EXPOSE 5001

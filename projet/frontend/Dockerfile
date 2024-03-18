@@ -1,18 +1,28 @@
-# Définissez l'image de base avec Python
-FROM python:3.8-slim
+# use an official python runtime
+FROM python:3.9-slim
 
-# Définissez le répertoire de travail dans le conteneur
+# set the working directory in the container
 WORKDIR /app
 
-# Copiez les fichiers requirements.txt et installez les dépendances Python
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# run the command to install the dependencies
+RUN pip install flask
 
-# Copiez le reste de votre application dans le conteneur
-COPY . .
+# copy the 'app.py' file to the working directory
+COPY app.py /app
 
-# Exposez le port que Flask utilisera
+# copy the 'templates' directory to the working directory
+COPY templates /app/templates
+
+# copy the 'static' directory to the working directory
+COPY static /app/static
+
+# expose the port 5000
 EXPOSE 5000
 
-# Définissez la commande pour démarrer votre application
-CMD ["flask", "run", "--host=0.0.0.0"]
+# define the environment variables
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
+ENV FLASK_RUN_PORT=5000
+
+# command to run on container start
+CMD ["flask", "run"]

@@ -1,11 +1,15 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 import os
 
 # create the Flask app
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('MESSAGE_DATABASE_URL', 'postgresql://normaluser:user@chat-service-db:5432/postgres-db') # PostgreSQL database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # silence the deprecation warning
+
+# initialize CORS
+CORS(app)
 
 # initialize SQLAlchemy
 db = SQLAlchemy(app)
@@ -14,35 +18,35 @@ db = SQLAlchemy(app)
 class Message(db.Model):
     __tablename__ = 'messages'
     id = db.Column(db.Integer, primary_key=True)
-    sender_id = db.Column(db.Integer, nullable=False)
-    receiver_id = db.Column(db.Integer, nullable=False)
+    sender = db.Column(db.Text, nullable=False)
+    receiver = db.Column(db.Text, nullable=False)
     content = db.Column(db.Text, nullable=False)
 
 # create the route /send_message
 @app.route('/send_message', methods=['POST'])
 def send_message():
     data = request.get_json()
-    sender_id = data.get('sender_id')
-    receiver_id = data.get('receiver_id')
+    sender = data.get('sender')
+    receiver = data.get('receiver')
     content = data.get('content')
 
-    if not all([sender_id, receiver_id, content]):
-        return jsonify({"warning": "sender ID, receiver ID, and message content are required"}), 400
+    if not all([sender, receiver, content]):
+        return jsonify({"warning": "sender, receiver, and message content are required"}), 400
 
-    message = Message(sender_id=sender_id, receiver_id=receiver_id, content=content)
+    message = Message(sender=sender, receiver=receiver, content=content)
     db.session.add(message)
     db.session.commit()
 
     return jsonify({"msg": "message sent successfully"}), 201
 
-# create the route /get_messages/<int:user_id>
-@app.route('/get_messages/<int:user_id>', methods=['GET'])
-def get_messages(user_id):
-    sent_messages = Message.query.filter_by(sender_id=user_id).all()
-    received_messages = Message.query.filter_by(receiver_id=user_id).all()
+# create the route /get_messages/<username>
+@app.route('/get_messages/<username>', methods=['GET'])
+def get_messages(username):
+    sent_messages = Message.query.filter_by(sender=username).all()
+    received_messages = Message.query.filter_by(receiver=username).all()
 
-    sent_messages = [{'id': message.id, 'sender_id': message.sender_id, 'receiver_id': message.receiver_id, 'content': message.content} for message in sent_messages]
-    received_messages = [{'id': message.id, 'sender_id': message.sender_id, 'receiver_id': message.receiver_id, 'content': message.content} for message in received_messages]
+    sent_messages = [{'id': message.id, 'sender': message.sender, 'receiver': message.receiver, 'content': message.content} for message in sent_messages]
+    received_messages = [{'id': message.id, 'sender': message.sender, 'receiver': message.receiver, 'content': message.content} for message in received_messages]
 
     return jsonify({"sent_messages": sent_messages, "received_messages": received_messages}), 200
 

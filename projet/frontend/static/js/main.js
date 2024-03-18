@@ -1,31 +1,76 @@
-// Exemple d'initialisation de la gestion des salles de chat et de la soumission des messages
-document.addEventListener('DOMContentLoaded', function() {
-    // Gestion de la création de nouvelles salles de chat
-    const createRoomButton = document.querySelector('.create-room-btn');
-    if (createRoomButton) {
-        createRoomButton.addEventListener('click', function() {
-            const roomName = prompt("Enter the name of the room:");
-            if (roomName) {
-                console.log("Create room:", roomName);
-                // Ici, vous ajouterez la logique pour créer une salle de chat côté serveur
-            }
-        });
+document.addEventListener("DOMContentLoaded", function() {
+    // function to fill the user list
+    function fillUserList() {
+        fetch('http://localhost:5002/get_users')
+        .then(response => response.json())
+        .then(data => {
+            const userList = document.getElementById("userList");
+            userList.innerHTML = "";
+            data.users.forEach(user => {
+                // don't show the current user in the list
+                if (user !== "{{ username }}") {
+                    const listItem = document.createElement("li");
+                    listItem.textContent = user;
+                    listItem.addEventListener("click", function() {
+                        displayMessages(user);
+                    });
+                    userList.appendChild(listItem);
+                }
+            });
+        })
+        .catch(error => console.error('Error:', error));
     }
 
-    // Gestion de l'envoi de messages dans une salle de chat
-    const messageForm = document.getElementById('messageInputForm');
-    if (messageForm) {
-        messageForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const messageInput = document.getElementById('messageInput');
-            const message = messageInput.value.trim();
-            if (message) {
-                console.log("Message to send:", message);
-                // Ici, vous ajouterez la logique pour envoyer le message au serveur
-                messageInput.value = ''; // Réinitialiser l'input après envoi
-            }
-        });
+    // function to display the messages for the selected user
+    function displayMessages(username) {
+        fetch(`http://localhost:5001/get_messages/${username}`)
+        .then(response => response.json())
+        .then(data => {
+            const messagesDiv = document.getElementById("messages");
+            messagesDiv.innerHTML = "";
+            data.received_messages.forEach(message => {
+                const messageDiv = document.createElement("div");
+                messageDiv.textContent = `${message.sender_id}: ${message.content}`;
+                messagesDiv.appendChild(messageDiv);
+            });
+        })
+        .catch(error => console.error('Error:', error));
     }
+
+    // event to send a message
+    document.getElementById("messageInputForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        const messageInput = document.getElementById("messageInput").value;
+        const selectedUser = document.querySelector("#userList li.active");
+        if (!selectedUser) {
+            alert("Please select a user to send a message to.");
+            return;
+        }
+        const recipient = selectedUser.textContent;
+        const data = {
+            sender_id: "{{ username }}", // current user
+            receiver_id: recipient,
+            content: messageInput
+        };
+        fetch("http://localhost:5001/send_message", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (response.ok) {
+                // refresh the messages for the selected user
+                displayMessages(recipient);
+                document.getElementById("messageInput").value = "";
+            } else {
+                alert("Error sending message, please try again.");
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    // call the function to fill the user list
+    fillUserList();
 });
-
-// Vous pouvez également ajouter des gestionnaires d'événements pour la recherche d'utilisateurs si nécessaire.

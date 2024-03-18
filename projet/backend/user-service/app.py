@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, create_access_token
 from flask_migrate import Migrate
+from flask_cors import CORS
 import bcrypt
 import os
 
@@ -10,6 +11,9 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://normaluser:user@user-service-db:5432/postgres-db') # PostgreSQL database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # silence the deprecation warning
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'warum')
+
+# initialize CORS
+CORS(app)
 
 # initialize SQLAlchemy
 db = SQLAlchemy(app)
@@ -58,6 +62,14 @@ def login():
         return jsonify(access_token=access_token), 200
 
     return jsonify({"warning": "bad username or password"}), 401
+
+# create the route /get_users
+@app.route('/get_users', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    users = [{'id': user.id, 'username': user.username} for user in users]
+
+    return jsonify({"users": users}), 200
 
 # live route
 @app.route('/live', methods=['GET'])
