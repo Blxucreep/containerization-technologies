@@ -7,14 +7,14 @@ RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 # set the working directory in the container
 WORKDIR /app
 
-# run the command to install the dependencies
-RUN pip install flask watchdog
+# copy the dependencies file to the working directory and run the command to install the dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # copy the application files to the working directory
 COPY app.py /app
 COPY templates /app/templates
 COPY static /app/static
-COPY hot_reload.py /app
 
 # expose the port the app runs on
 EXPOSE 5000
@@ -31,8 +31,5 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 # switch to the user
 USER appuser
 
-# give execute permission to the hot_reload.py file
-#RUN chmod +x hot_reload.py
-
 # command to run on container start
-CMD ["sh", "-c", "flask run & python hot_reload.py"]
+CMD ["flask", "run"]

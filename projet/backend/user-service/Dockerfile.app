@@ -5,11 +5,11 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # copy the dependencies file to the working directory and run the command to install the dependencies
-COPY requirements.txt /app/
-RUN pip install -r requirements.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # copy the 'app.py' file to the working directory
-COPY app.py /app
+COPY app.py .
 
 # expose the port 5002
 EXPOSE 5002

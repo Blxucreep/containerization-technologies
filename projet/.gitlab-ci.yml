@@ -39,7 +39,7 @@ scan_dockerfiles:
     - cat /kaniko/.docker/config.json | sed 's/"password":"[^"]*"/"password":"REDACTED"/'
     - /kaniko/executor --context $CI_PROJECT_DIR/$CONTEXT --dockerfile $CI_PROJECT_DIR/$DOCKERFILE --destination ahmedmaaloul/$SERVICE:$CI_COMMIT_SHORT_SHA
 
-# Define build jobs for each service with its own repository
+# define build jobs for each service with its own repository
 build_frontend:
   <<: *build_template
   variables:
