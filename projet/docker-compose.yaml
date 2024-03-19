@@ -18,6 +18,8 @@ services:
       dockerfile: Dockerfile.app
     ports:
       - 5001:5001
+    depends_on:
+      - chat-service-db
     networks:
       - chat-service-network
       - default
@@ -39,6 +41,8 @@ services:
       dockerfile: Dockerfile.app
     ports:
       - 5002:5002
+    depends_on:
+      - user-service-db
     networks:
       - user-service-network
       - default

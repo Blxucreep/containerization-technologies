@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from flask_cors import CORS
 import os
 from datetime import datetime
@@ -43,14 +43,22 @@ def send_message():
 
     return jsonify({"msg": "message sent successfully"}), 201
 
-# create the route /get_messages/<username>
-@app.route('/get_messages/<username>', methods=['GET'])
+# create the route /get_messages/<username>?connectedUser=<username>
+@app.route('/get_messages/<username>?connectedUser=<username>', methods=['GET'])
 def get_messages(username):
-    messages = Message.query.filter(or_(Message.sender == username, Message.receiver == username)).all()
+    connected_user = request.args.get('connectedUser')
+    
+    # get all messages between the two users
+    messages = Message.query.filter(
+        or_(
+            and_(Message.sender == username, Message.receiver == connected_user),
+            and_(Message.receiver == username, Message.sender == connected_user)
+        )
+    ).all()
 
-    messages = [{'id': message.id, 'sender': message.sender, 'receiver': message.receiver, 'time': message.time, 'content': message.content} for message in messages]
+    messages_data = [{'id': message.id, 'sender': message.sender, 'receiver': message.receiver, 'time': message.time, 'content': message.content} for message in messages]
 
-    return jsonify({"messages": messages}), 200
+    return jsonify({"messages": messages_data}), 200
 
 # live route
 @app.route('/live', methods=['GET'])

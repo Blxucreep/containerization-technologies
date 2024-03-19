@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (onlyUsername) {
             username = user; // if the user is a string, it's the username
         }
-        fetch(`http://localhost:5001/get_messages/${username}`)
+        fetch(`http://localhost:5001/get_messages/${username}?connectedUser=${storedUsername}`)
         .then(response => response.json())
         .then(data => {
             // display the username to which the messages belong
@@ -144,6 +144,14 @@ document.addEventListener("DOMContentLoaded", function() {
         window.location.href = '/login';
     });
 
+
     // call the function to fill the user list
     fillUserList();
+    function refreshMessages() {
+        const selectedUser = document.getElementById("your-messages").name;
+        if (selectedUser) {
+            displayMessages(selectedUser, true);
+        }
+    }
+    setInterval(refreshMessages, 2000);
 });
