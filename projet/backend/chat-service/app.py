@@ -43,8 +43,8 @@ def send_message():
 
     return jsonify({"msg": "message sent successfully"}), 201
 
-# create the route /get_messages/<username>?connectedUser=<username>
-@app.route('/get_messages/<username>?connectedUser=<username>', methods=['GET'])
+# create the route /get_messages/<username>
+@app.route('/get_messages/<username>', methods=['GET'])
 def get_messages(username):
     connected_user = request.args.get('connectedUser')
     
