@@ -1,0 +1,68 @@
+stages:
+  - kics-scan
+  - kics-results
+  - build
+  - trivy-scan
+
+variables:
+  DOCKERFILE_PATH: Dockerfile
+  KICS_RESULTS_PATH: kics-results
+
+kics-scan:
+  stage: kics-scan
+  image:
+    name: checkmarx/kics:latest
+    entrypoint: [""]
+  script:
+    - |
+      echo "Scanning Dockerfiles..."
+      kics scan --path $DOCKERFILE_PATH --output-path $KICS_RESULTS_PATH
+  artifacts:
+    paths:
+      - $KICS_RESULTS_PATH/results.json
+  only:
+    - branches
+
+kics-results:
+  stage: kics-results
+  image: alpine:latest
+  script:
+    - |
+      echo "Showing KICS scan results..."
+      cat $KICS_RESULTS_PATH/results.json
+  dependencies:
+    - kics-scan
+  only:
+    - branches
+
+build:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.14.0-debug
+    entrypoint: [""]
+  script:
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}"
+      --tar-path "${CI_PROJECT_DIR}/image.tar"
+    - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/image.tar
+  only:
+    - branches
+
+trivy-scan:
+  stage: trivy-scan
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - |
+      echo "Scanning image..."
+      trivy image --input $CI_PROJECT_DIR/image.tar
+  dependencies:
+    - build
+  only:
+    - branches
